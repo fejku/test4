@@ -1,18 +1,39 @@
-import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
+import { IsEmail, Length } from "class-validator";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, Index, CreateDateColumn, BeforeInsert } from "typeorm";
+import bcrypt from "bcrypt";
+import { classToPlain, Exclude } from "class-transformer";
+import locale from "@locale/pl";
 
-@Entity()
-export class User {
+@Entity({ schema: "auth" })
+export class User extends BaseEntity {
+  constructor(user: Partial<User>) {
+    super();
+    Object.assign(this, user);
+  }
 
-    @PrimaryGeneratedColumn()
-    id: number;
+  @Exclude()
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    firstName: string;
+  @Index()
+  @IsEmail({}, { message: locale.provideCorrectEmail })
+  @Column({ unique: true })
+  email: string;
 
-    @Column()
-    lastName: string;
+  @Exclude()
+  @Length(6)
+  @Column()
+  password: string;
 
-    @Column()
-    age: number;
+  @CreateDateColumn()
+  createdAt: Date;
 
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 6);
+  }
+
+  toJSON() {
+    return classToPlain(this);
+  }
 }

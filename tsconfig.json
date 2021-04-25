@@ -10,6 +10,13 @@
       "outDir": "./build",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "sourceMap": true
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "baseUrl": "./src",
+      "paths": {
+         "@entity/*": ["entity/*"],
+         "@interface/*": ["interface/*"],
+         "@locale/*": ["locale/*"],
+      }
    }
 }

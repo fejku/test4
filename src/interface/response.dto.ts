@@ -1,18 +1,18 @@
-export interface ValidationError {
+export interface ResponseError {
   field: string;
-  message: string[];
+  message: string;
 }
 
 export class ResponseDTO {
-  static setError(errors: ValidationError[]) {
+  static setError(errors: ResponseError[]) {
     return { errors, body: null };
   }
 
   static setErrorMessage(msg: string) {
-    return { errors: [{ field: "", message: [msg] }], body: null };
+    return { errors: [{ field: "", message: msg }], body: null };
   }
 
   static setBody(body: any) {
-    return { errors: <ValidationError[]>[], body };
+    return { errors: <ResponseError[]>[], body };
   }
 }

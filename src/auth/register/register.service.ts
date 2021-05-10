@@ -2,7 +2,7 @@ import { validate } from "class-validator";
 
 import locale from "@locale/pl";
 import { User } from "@entity/User";
-import { ResponseDTO, ValidationError } from "@interface/response.dto";
+import { ResponseDTO, ResponseError } from "@interface/response.dto";
 
 const isEmailUsed = async (email: string) => {
   try {
@@ -15,14 +15,15 @@ const isEmailUsed = async (email: string) => {
 };
 
 export const validateParameters = async (email: string) => {
-  const errors: ValidationError[] = [];
+  const errors: ResponseError[] = [];
 
   try {
     if (await isEmailUsed(email)) {
-      errors.push({
+      const error = {
         field: "email",
-        message: [locale.emailUsed],
-      });
+        message: locale.emailUsed,
+      };
+      errors.push(error);
     }
 
     return errors;
@@ -42,10 +43,21 @@ export const registerService = async (email: string, password: string) => {
     // Validate
     const errors = await validate(user);
     if (errors.length > 0) {
-      const validateErrors = errors.map((error) => ({
-        field: error.property,
-        message: Object.values(error.constraints),
-      }));
+      const validateErrors = errors
+        .map((error) => {
+          const resultArray: ResponseError[] = [];
+
+          for (const errorMessage of Object.values(error.constraints)) {
+            const errorObject = {
+              field: error.property,
+              message: errorMessage,
+            };
+            resultArray.push(errorObject);
+          }
+          return resultArray;
+        })
+        .flat();
+
       return ResponseDTO.setError(validateErrors);
     }
     await user.save();
